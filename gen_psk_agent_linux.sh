@@ -22,9 +22,7 @@ echo "TLSPSKIdentity=$PSK_IDENTITY" >> $ZABBIX_SETTING_FILE
 systemctl restart zabbix-agent.service
 
 echo "Update your server-side host configuration"
-echo "PSK_KEY is"
-echo $PSK_KEY
-echo "PSK_IDENTITY is"
-echo $PSK_IDENTITY
+echo "PSK_IDENTITY=$PSK_IDENTITY"
+echo "PSK_KEY=$PSK_KEY"
 
 exit
