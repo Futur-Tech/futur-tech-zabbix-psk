@@ -26,3 +26,5 @@ echo "PSK_KEY is"
 echo $PSK_KEY
 echo "PSK_IDENTITY is"
 echo $PSK_IDENTITY
+
+exit
