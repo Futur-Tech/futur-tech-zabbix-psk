@@ -10,7 +10,7 @@ PSK_IDENTITY="ft-gen-$(hostname)"
 
 echo $PSK_KEY > secret.psk
 chown zabbix:zabbix secret.psk
-chmod 640 secret.psk
+chmod 600 secret.psk
 
 ZABBIX_SETTING_FILE=/etc/zabbix/zabbix_agentd.d/ft-psk.conf
 
@@ -22,7 +22,9 @@ echo "TLSPSKIdentity=$PSK_IDENTITY" >> $ZABBIX_SETTING_FILE
 systemctl restart zabbix-agent.service
 
 echo "Update your server-side host configuration"
-echo "PSK_IDENTITY=$PSK_IDENTITY"
-echo "PSK_KEY=$PSK_KEY"
+echo "PSK_IDENTITY="
+echo $PSK_IDENTITY
+echo "PSK_KEY="
+echo $PSK_KEY
 
 exit
