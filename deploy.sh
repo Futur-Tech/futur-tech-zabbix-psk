@@ -142,8 +142,8 @@ echo "UserParameter=ft-psk.key.lastmodified, stat --format=%Y ${PSK_FLD}/key.psk
 
 case $OS in
     Linux)
-        echo "systemctl restart zabbix-agent.service" | at now + 1 min &>/dev/null ## restart zabbix agent with a delay
-        $S_LOG -s $? -d "$S_NAME" "Scheduling Zabbix Agent Restart"
+        echo "systemctl restart zabbix-${ZBX_TYPE}.service" | at now + 1 min &>/dev/null ## restart zabbix ${ZBX_TYPE} with a delay
+        $S_LOG -s $? -d "$S_NAME" "Scheduling Zabbix ${ZBX_TYPE} Restart"
         ;;
 esac
 
