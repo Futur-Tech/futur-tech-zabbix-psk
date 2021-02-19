@@ -136,9 +136,12 @@ then
 
 fi
 
-$S_LOG -d "$S_NAME" -d "Installing Zabbix UserParameters" 
-echo "UserParameter=ft-psk.identity, grep -oP '^TLSPSKIdentity=\K.+' ${ZBX_PSK_CONF}" > $ZBX_PSK_CONF_USERPARAM
-echo "UserParameter=ft-psk.key.lastmodified, stat --format=%Y ${PSK_FLD}/key.psk" >> $ZBX_PSK_CONF_USERPARAM
+if [ "${ZBX_TYPE}" = "agent" ]
+then
+    $S_LOG -d "$S_NAME" -d "Installing Zabbix UserParameters" 
+    echo "UserParameter=ft-psk.identity, grep -oP '^TLSPSKIdentity=\K.+' ${ZBX_PSK_CONF}" > $ZBX_PSK_CONF_USERPARAM
+    echo "UserParameter=ft-psk.key.lastmodified, stat --format=%Y ${PSK_FLD}/key.psk" >> $ZBX_PSK_CONF_USERPARAM
+fi
 
 case $OS in
     Linux)
