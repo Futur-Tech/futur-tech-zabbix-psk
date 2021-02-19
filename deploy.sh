@@ -96,6 +96,7 @@ esac
 
 ZBX_PSK_CONF=${ZBX_ETC}/zabbix_${ZBX_TYPE}d.d/ft-psk.conf
 ZBX_PSK_CONF_USERPARAM=${ZBX_ETC}/zabbix_${ZBX_TYPE}d.d/ft-psk-userparam.conf
+ZBX_PSK_KEY=${PSK_FLD}/key-${ZBX_TYPE}.psk
 
 if [ $NEW_PSK -eq 1 ]
 then
@@ -106,15 +107,15 @@ then
         chown zabbix:zabbix ${PSK_FLD}
         # chmod 700 ${PSK_FLD}
     fi
-    echo $PSK_KEY > ${PSK_FLD}/key.psk
-    chown zabbix:zabbix ${PSK_FLD}/key.psk
-    chmod 600 ${PSK_FLD}/key.psk
+    echo $PSK_KEY > ${ZBX_PSK_KEY}
+    chown zabbix:zabbix ${ZBX_PSK_KEY}
+    chmod 600 ${ZBX_PSK_KEY}
 
     $S_LOG -d "$S_NAME" -d "Installing Zabbix PSK Conf" 
     echo "TLSConnect=psk" > $ZBX_PSK_CONF
     echo "TLSAccept=psk" >> $ZBX_PSK_CONF
     echo "TLSPSKIdentity=$PSK_IDENTITY" >> $ZBX_PSK_CONF
-    echo "TLSPSKFile=${PSK_FLD}/key.psk" >> $ZBX_PSK_CONF
+    echo "TLSPSKFile=${ZBX_PSK_KEY}" >> $ZBX_PSK_CONF
 
     echo "" 
     echo "####################################################"
@@ -127,7 +128,7 @@ then
     grep -oP '^TLSPSKIdentity=\K.+' ${ZBX_PSK_CONF}
     echo "" 
     echo "PSK_KEY"
-    cat ${PSK_FLD}/key.psk
+    cat ${ZBX_PSK_KEY}
     echo "" 
     echo "####################################################"
     echo "###################  WARNING  ######################"
@@ -140,7 +141,7 @@ if [ "${ZBX_TYPE}" = "agent" ]
 then
     $S_LOG -d "$S_NAME" -d "Installing Zabbix UserParameters" 
     echo "UserParameter=ft-psk.identity, grep -oP '^TLSPSKIdentity=\K.+' ${ZBX_PSK_CONF}" > $ZBX_PSK_CONF_USERPARAM
-    echo "UserParameter=ft-psk.key.lastmodified, stat --format=%Y ${PSK_FLD}/key.psk" >> $ZBX_PSK_CONF_USERPARAM
+    echo "UserParameter=ft-psk.key.lastmodified, stat --format=%Y ${ZBX_PSK_KEY}" >> $ZBX_PSK_CONF_USERPARAM
 fi
 
 case $OS in
