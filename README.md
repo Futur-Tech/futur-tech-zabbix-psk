@@ -1,9 +1,20 @@
 # Zabbix - Script for generating and installing PSK key
 Script Linux and Windows to generate and configure PSK key on agent
 
-## Linux Install & Run
+## Install
 
-    cd /usr/local/src ; git clone https://github.com/GuillaumeHullin/futur-tech-zabbix-psk ; cd futur-tech-zabbix-psk ; ./deploy.sh
+    cd /usr/local/src ; git clone https://github.com/GuillaumeHullin/futur-tech-zabbix-psk ; cd futur-tech-zabbix-psk
+
+To load a specific key:
+    deploy.sh <agent|proxy> <psk_identity> <psk_key>
+
+To generate a random key: 
+    deploy.sh <agent|proxy> new-psk
+    
+To update configuration only:
+    deploy.sh <agent|proxy>
+
+
 
 ## Credit
 
