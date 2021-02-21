@@ -121,12 +121,7 @@ then
             chmod 600 ${ZBX_PSK_KEY}
             ;;
         Synology)
-            if [ ! -d "${PSK_FLD}" ]
-            then
-                mkdir ${PSK_FLD}/
-                chown zabbix${ZBX_TYPE}:root ${PSK_FLD}
-            fi
-            sudo echo $PSK_KEY > ${ZBX_PSK_KEY}
+            echo $PSK_KEY > ${ZBX_PSK_KEY}
             chown zabbix${ZBX_TYPE}:root ${ZBX_PSK_KEY}
             chmod 600 ${ZBX_PSK_KEY}
             ;;
