@@ -36,19 +36,27 @@ then
     OS="Linux"
     ZBX_ETC="/etc/zabbix"
     PSK_FLD="/home/zabbix"
+    ZBX_ETC_D="d.d"
     
 elif [ -d "/usr/local/zabbix/etc/" ]
 then
     OS="Synology"
     ZBX_ETC="/usr/local/zabbix/etc"
     PSK_FLD="/usr/local/zabbix"
+    [ "$ZBX_TYPE" = "agent" ] && ZBX_ETC_D="d.conf.d"
+    [ "$ZBX_TYPE" = "proxy" ] && ZBX_ETC_D=".conf.d"
 
 else
     $S_LOG -s crit -d $S_NAME "Sorry Zabbix conf folder could not be found. Exit."
     exit 1
 fi
-$S_LOG -d "$S_NAME" "The script will run for $OS" 
 
+ZBX_PSK_CONF=${ZBX_ETC}/zabbix_${ZBX_TYPE}${ZBX_ETC_D}/ft-psk.conf
+ZBX_PSK_CONF_USERPARAM=${ZBX_ETC}/zabbix_${ZBX_TYPE}${ZBX_ETC_D}/ft-psk-userparam.conf
+ZBX_PSK_KEY=${PSK_FLD}/key-${ZBX_TYPE}.psk
+
+
+$S_LOG -d "$S_NAME" "The script will run for $OS" 
 
 #############################
 #############################
@@ -61,12 +69,13 @@ then
     NEW_PSK=1
     PSK_IDENTITY="$2"
     PSK_KEY="$3"
- 
+
 elif [[ "$2" == *"new-psk"* ]]
 then
     NEW_PSK=1
     PSK_KEY="$(openssl rand -hex 32)"
     PSK_IDENTITY="ft-gen-${ZBX_TYPE}-$(hostname)"
+
 else 
     NEW_PSK=0
 fi
@@ -96,13 +105,34 @@ esac
 #############################
 #############################
 
-ZBX_PSK_CONF=${ZBX_ETC}/zabbix_${ZBX_TYPE}d.d/ft-psk.conf
-ZBX_PSK_CONF_USERPARAM=${ZBX_ETC}/zabbix_${ZBX_TYPE}d.d/ft-psk-userparam.conf
-ZBX_PSK_KEY=${PSK_FLD}/key-${ZBX_TYPE}.psk
-
 if [ $NEW_PSK -eq 1 ]
 then
     $S_LOG -d "$S_NAME" -d "Installing Zabbix PSK Key" 
+
+    case $OS in
+        Linux)
+            if [ ! -d "${PSK_FLD}" ]
+            then
+                mkdir ${PSK_FLD}/
+                chown zabbix:zabbix ${PSK_FLD}
+            fi
+            echo $PSK_KEY > ${ZBX_PSK_KEY}
+            chown zabbix:zabbix ${ZBX_PSK_KEY}
+            chmod 600 ${ZBX_PSK_KEY}
+            ;;
+        DSM)
+            if [ ! -d "${PSK_FLD}" ]
+            then
+                mkdir ${PSK_FLD}/
+                chown zabbix${ZBX_TYPE}:root ${PSK_FLD}
+            fi
+            echo $PSK_KEY > ${ZBX_PSK_KEY}
+            chown zabbix${ZBX_TYPE}:root ${ZBX_PSK_KEY}
+            chmod 600 ${ZBX_PSK_KEY}
+            ;;
+    esac
+
+
     if [ ! -d "${PSK_FLD}" ]
     then
         mkdir ${PSK_FLD}/
