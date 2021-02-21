@@ -146,7 +146,7 @@ fi
 
 case $OS in
     Linux)
-        echo "systemctl restart zabbix-${ZBX_TYPE}.service" | at now + 1 min &>/dev/null ## restart zabbix ${ZBX_TYPE} with a delay
+        echo "service zabbix-${ZBX_TYPE} restart" | at now + 1 min &>/dev/null ## restart zabbix ${ZBX_TYPE} with a delay
         $S_LOG -s $? -d "$S_NAME" "Scheduling Zabbix ${ZBX_TYPE} Restart"
         ;;
 esac
