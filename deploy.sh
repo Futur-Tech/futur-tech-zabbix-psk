@@ -10,7 +10,7 @@
 # To update confs:          deploy.sh <agent|proxy>
 
 
-source "$(dirname "$0")/ft-util/ft-util_inc_var"
+source "$(dirname "$0")/ft-util/ft_util_inc_var"
 
 $S_LOG -d $S_NAME "Start $S_NAME $*"
 
@@ -79,9 +79,9 @@ case $OS in
     Linux)
         SUDOERS_ETC="/etc/sudoers.d/ft-psk"
 
-        echo 'Defaults:zabbix !requiretty' | sudo EDITOR='tee' visudo $SUDOERS_ETC &>/dev/null
-        echo 'zabbix ALL=(ALL) NOPASSWD:/usr/local/src/futur-tech-zabbix-psk/deploy.sh' | sudo EDITOR='tee -a' visudo $SUDOERS_ETC &>/dev/null
-        echo 'zabbix ALL=(ALL) NOPASSWD:/usr/local/src/futur-tech-zabbix-psk/deploy-update.sh' | sudo EDITOR='tee -a' visudo $SUDOERS_ETC &>/dev/null
+        echo 'Defaults:zabbix !requiretty' | sudo EDITOR='tee' visudo --file=$SUDOERS_ETC &>/dev/null
+        echo 'zabbix ALL=(ALL) NOPASSWD:/usr/local/src/futur-tech-zabbix-psk/deploy.sh' | sudo EDITOR='tee -a' visudo --file=$SUDOERS_ETC &>/dev/null
+        echo 'zabbix ALL=(ALL) NOPASSWD:/usr/local/src/futur-tech-zabbix-psk/deploy-update.sh' | sudo EDITOR='tee -a' visudo --file=$SUDOERS_ETC &>/dev/null
 
         cat $SUDOERS_ETC | $S_LOG -d "$S_NAME" -d "$SUDOERS_ETC" -i 
         ;;
