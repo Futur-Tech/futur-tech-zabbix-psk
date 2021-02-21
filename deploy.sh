@@ -120,7 +120,7 @@ then
             chown zabbix:zabbix ${ZBX_PSK_KEY}
             chmod 600 ${ZBX_PSK_KEY}
             ;;
-        DSM)
+        Synology)
             if [ ! -d "${PSK_FLD}" ]
             then
                 mkdir ${PSK_FLD}/
@@ -131,16 +131,6 @@ then
             chmod 600 ${ZBX_PSK_KEY}
             ;;
     esac
-
-
-    if [ ! -d "${PSK_FLD}" ]
-    then
-        mkdir ${PSK_FLD}/
-        chown zabbix:zabbix ${PSK_FLD}
-    fi
-    echo $PSK_KEY > ${ZBX_PSK_KEY}
-    chown zabbix:zabbix ${ZBX_PSK_KEY}
-    chmod 600 ${ZBX_PSK_KEY}
 
     $S_LOG -d "$S_NAME" -d "Installing Zabbix PSK Conf" 
     echo "TLSConnect=psk" > $ZBX_PSK_CONF
@@ -180,7 +170,7 @@ case $OS in
         echo "service zabbix-${ZBX_TYPE} restart" | at now + 1 min &>/dev/null ## restart zabbix ${ZBX_TYPE} with a delay
         $S_LOG -s $? -d "$S_NAME" "Scheduling Zabbix ${ZBX_TYPE} Restart"
         ;;
-    DSM)
+    Synology)
         synoservice --restart pkgctl-zabbix
         $S_LOG -s $? -d "$S_NAME" "Zabbix Service Restart"
         ;;
