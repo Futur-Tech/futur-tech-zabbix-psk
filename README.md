@@ -1,9 +1,15 @@
 # Zabbix - Script for generating and installing PSK key
-Script Linux and Windows to generate and configure PSK key on agent
+Script Linux and DSM Synology to generate and configure PSK key on agent
 
 ## Install
 
+### Linux
+
     cd /usr/local/src ; git clone https://github.com/GuillaumeHullin/futur-tech-zabbix-psk ; cd futur-tech-zabbix-psk
+
+### DSM (Synology)
+
+    cd /usr/local/zabbix ; git clone https://github.com/GuillaumeHullin/futur-tech-zabbix-psk ; cd futur-tech-zabbix-psk
 
 To load a specific key:
     

@@ -40,6 +40,8 @@ then
 elif [ -d "/usr/local/zabbix/etc/" ]
 then
     OS="Synology"
+    ZBX_ETC="/usr/local/zabbix/etc"
+    PSK_FLD="/usr/local/zabbix"
 
 else
     $S_LOG -s crit -d $S_NAME "Sorry Zabbix conf folder could not be found. Exit."
@@ -105,7 +107,6 @@ then
     then
         mkdir ${PSK_FLD}/
         chown zabbix:zabbix ${PSK_FLD}
-        # chmod 700 ${PSK_FLD}
     fi
     echo $PSK_KEY > ${ZBX_PSK_KEY}
     chown zabbix:zabbix ${ZBX_PSK_KEY}
@@ -148,6 +149,10 @@ case $OS in
     Linux)
         echo "service zabbix-${ZBX_TYPE} restart" | at now + 1 min &>/dev/null ## restart zabbix ${ZBX_TYPE} with a delay
         $S_LOG -s $? -d "$S_NAME" "Scheduling Zabbix ${ZBX_TYPE} Restart"
+        ;;
+    DSM)
+        synoservice --restart pkgctl-zabbix
+        $S_LOG -s $? -d "$S_NAME" "Zabbix Service Restart"
         ;;
 esac
 
