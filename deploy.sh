@@ -86,9 +86,9 @@ fi
 #############################
 #############################
 
-$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "==============================================================================="
-$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "======================     SUDOERS CONFIGURATION    ==========================="
-$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "==============================================================================="
+$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "========================="
+$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "= SUDOERS CONFIGURATION ="
+$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "========================="
 
 case $OS in
     Linux)
@@ -99,15 +99,15 @@ case $OS in
 
     Synology)
         echo "Defaults:zabbixagent !requiretty" > "${SUDOERS_ETC}"
-        echo "zabbixagent ALL=(ALL) NOPASSWD:${S_DIR_PATH}/deploy.sh" >> "${SUDOERS_ETC}"
+        echo "zabbixagent ALL=(ALL) NOPASSWD:${S_DIR_PATH}/deploy.sh " >> "${SUDOERS_ETC}"
         echo "zabbixagent ALL=(ALL) NOPASSWD:${S_DIR_PATH}/deploy-update.sh" >> "${SUDOERS_ETC}"
         chmod 0440 "$SUDOERS_ETC"
         ;;
 esac
 
 
-$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "==============================================================================="
-$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "==============================================================================="
+$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "========================="
+$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "========================="
 
 cat $SUDOERS_ETC | $S_LOG -d "$S_NAME" -d "$SUDOERS_ETC" -i 
 
