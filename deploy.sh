@@ -54,7 +54,7 @@ fi
 ZBX_PSK_CONF=${ZBX_ETC}/zabbix_${ZBX_TYPE}${ZBX_ETC_D}/ft-psk.conf
 ZBX_PSK_CONF_USERPARAM=${ZBX_ETC}/zabbix_${ZBX_TYPE}${ZBX_ETC_D}/ft-psk-userparam.conf
 ZBX_PSK_KEY=${PSK_FLD}/key-${ZBX_TYPE}.psk
-
+SUDOERS_ETC="/etc/sudoers.d/ft-psk"
 
 $S_LOG -d "$S_NAME" "The script will run for $OS" 
 
@@ -82,22 +82,34 @@ fi
 
 #############################
 #############################
-## SETUP SUDOER FILES (Linux only)
+## SETUP SUDOER FILES
 #############################
 #############################
+
+$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "==============================================================================="
+$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "======================     SUDOERS CONFIGURATION    ==========================="
+$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "==============================================================================="
 
 case $OS in
     Linux)
-        SUDOERS_ETC="/etc/sudoers.d/ft-psk"
+        echo "Defaults:zabbix !requiretty" | sudo EDITOR='tee' visudo --file=$SUDOERS_ETC &>/dev/null
+        echo "zabbix ALL=(ALL) NOPASSWD:${S_DIR_PATH}/deploy.sh" | sudo EDITOR='tee -a' visudo --file=$SUDOERS_ETC &>/dev/null
+        echo "zabbix ALL=(ALL) NOPASSWD:${S_DIR_PATH}/deploy-update.sh" | sudo EDITOR='tee -a' visudo --file=$SUDOERS_ETC &>/dev/null
+        ;;
 
-        echo 'Defaults:zabbix !requiretty' | sudo EDITOR='tee' visudo --file=$SUDOERS_ETC &>/dev/null
-        echo 'zabbix ALL=(ALL) NOPASSWD:/usr/local/src/futur-tech-zabbix-psk/deploy.sh' | sudo EDITOR='tee -a' visudo --file=$SUDOERS_ETC &>/dev/null
-        echo 'zabbix ALL=(ALL) NOPASSWD:/usr/local/src/futur-tech-zabbix-psk/deploy-update.sh' | sudo EDITOR='tee -a' visudo --file=$SUDOERS_ETC &>/dev/null
-
-        cat $SUDOERS_ETC | $S_LOG -d "$S_NAME" -d "$SUDOERS_ETC" -i 
+    Synology)
+        echo "Defaults:zabbixagent !requiretty" > "${SUDOERS_ETC}"
+        echo "zabbixagent ALL=(ALL) NOPASSWD:${S_DIR_PATH}/deploy.sh" >> "${SUDOERS_ETC}"
+        echo "zabbixagent ALL=(ALL) NOPASSWD:${S_DIR_PATH}/deploy-update.sh" >> "${SUDOERS_ETC}"
+        chmod 0440 "$SUDOERS_ETC"
         ;;
 esac
 
+
+$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "==============================================================================="
+$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "==============================================================================="
+
+cat $SUDOERS_ETC | $S_LOG -d "$S_NAME" -d "$SUDOERS_ETC" -i 
 
 #############################
 #############################
