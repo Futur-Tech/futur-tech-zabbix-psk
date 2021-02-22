@@ -86,9 +86,9 @@ fi
 #############################
 #############################
 
-$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "========================="
-$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "= SUDOERS CONFIGURATION ="
-$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "========================="
+$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "==============================="
+$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "==== SUDOERS CONFIGURATION ===="
+$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "==============================="
 
 case $OS in
     Linux)
@@ -105,8 +105,8 @@ esac
 
 cat $SUDOERS_ETC | $S_LOG -d "$S_NAME" -d "$SUDOERS_ETC" -i 
 echo $(whoami)
-$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "========================="
-$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "========================="
+$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "==============================="
+$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "==============================="
 
 
 #############################
