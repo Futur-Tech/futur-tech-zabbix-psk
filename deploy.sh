@@ -103,11 +103,11 @@ case $OS in
         ;;
 esac
 
-
-$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "========================="
-$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "========================="
-
 cat $SUDOERS_ETC | $S_LOG -d "$S_NAME" -d "$SUDOERS_ETC" -i 
+
+$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "========================="
+$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "========================="
+
 
 #############################
 #############################
