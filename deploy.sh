@@ -176,7 +176,7 @@ case $OS in
         $S_LOG -s $? -d "$S_NAME" "Scheduling Zabbix ${ZBX_TYPE} Restart"
         ;;
     Synology)
-        synoservice --restart pkgctl-zabbix
+        # synoservice --restart pkgctl-zabbix
         $S_LOG -s $? -d "$S_NAME" "Zabbix Service Restart"
         ;;
 esac
