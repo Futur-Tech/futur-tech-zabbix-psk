@@ -3,7 +3,7 @@ Script Linux and DSM Synology to generate and configure PSK key on agent
 
 ## Install
 
-    git clone https://github.com/GuillaumeHullin/futur-tech-zabbix-psk
+    git clone https://github.com/Futur-Tech/futur-tech-zabbix-psk
     cd futur-tech-zabbix-psk
 
 To load a specific key:
