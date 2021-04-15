@@ -36,7 +36,7 @@ then
     OS="Linux"
     ZBX_ETC="/etc/zabbix"
     PSK_FLD="/home/zabbix"
-    ZBX_ETC_D="d.d"
+    ZBX_ETC_D="d.conf.d"
     
 elif [ -d "/usr/local/zabbix/etc/" ]
 then
