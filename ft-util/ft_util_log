@@ -135,4 +135,3 @@ then
     log_msg="$*"
     echo_log
 fi
-
