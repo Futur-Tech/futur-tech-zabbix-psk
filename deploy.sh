@@ -93,11 +93,13 @@ $S_LOG -d $S_NAME -d "$SUDOERS_ETC" "==============================="
 case $OS in
     Linux)
         echo "Defaults:zabbix !requiretty" | sudo EDITOR='tee' visudo --file=$SUDOERS_ETC &>/dev/null
+        echo "zabbix ALL=(ALL) NOPASSWD:${S_DIR_PATH}/deploy.sh" | sudo EDITOR='tee -a' visudo --file=$SUDOERS_ETC &>/dev/null
         echo "zabbix ALL=(ALL) NOPASSWD:${S_DIR_PATH}/deploy-update.sh" | sudo EDITOR='tee -a' visudo --file=$SUDOERS_ETC &>/dev/null
         ;;
 
     Synology)
         echo "Defaults:zabbixagent !requiretty" > "${SUDOERS_ETC}"
+        echo "zabbixagent ALL=(ALL) NOPASSWD:${S_DIR_PATH}/deploy.sh" >> "${SUDOERS_ETC}"
         echo "zabbixagent ALL=(ALL) NOPASSWD:${S_DIR_PATH}/deploy-update.sh" >> "${SUDOERS_ETC}"
         chmod 0440 "$SUDOERS_ETC"
         ;;
