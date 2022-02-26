@@ -31,20 +31,20 @@ $S_LOG -d "$S_NAME" "The script will run for Zabbix $ZBX_TYPE"
 #############################
 #############################
 
+[ "$ZBX_TYPE" = "agent" ] && ZBX_ETC_D="d.conf.d"
+[ "$ZBX_TYPE" = "proxy" ] && ZBX_ETC_D=".conf.d"
+
 if [ -d "/etc/zabbix" ]
 then
     OS="Linux"
     ZBX_ETC="/etc/zabbix"
     PSK_FLD="/home/zabbix"
-    ZBX_ETC_D="d.conf.d"
     
 elif [ -d "/usr/local/zabbix/etc/" ]
 then
     OS="Synology"
     ZBX_ETC="/usr/local/zabbix/etc"
     PSK_FLD="/usr/local/zabbix"
-    [ "$ZBX_TYPE" = "agent" ] && ZBX_ETC_D="d.conf.d"
-    [ "$ZBX_TYPE" = "proxy" ] && ZBX_ETC_D=".conf.d"
 
 else
     $S_LOG -s crit -d $S_NAME "Sorry Zabbix conf folder could not be found. Exit."
