@@ -1,5 +1,5 @@
 # Zabbix - Script for generating and installing PSK key
-Script Linux and DSM Synology to generate and configure PSK key on agent
+Script Linux to generate and configure PSK key on agent
 
 ## Install
 

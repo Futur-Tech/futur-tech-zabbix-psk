@@ -12,8 +12,6 @@
 
 source "$(dirname "$0")/ft-util/ft_util_inc_var"
 
-$S_LOG -d $S_NAME "Start $S_NAME $*"
-
 if [ "$1" = "agent" ] || [ "$1" = "proxy" ]
 then
     ZBX_TYPE="$1" # "agent" or "proxy"
@@ -25,44 +23,37 @@ else
 fi
 $S_LOG -d "$S_NAME" "The script will run for Zabbix $ZBX_TYPE" 
 
-#############################
-#############################
-## CHECK OS
-#############################
-#############################
+$S_LOG -d $S_NAME "Start $S_NAME $*"
 
-[ "$ZBX_TYPE" = "agent" ] && ZBX_ETC_D="d.conf.d"
-[ "$ZBX_TYPE" = "proxy" ] && ZBX_ETC_D=".conf.d"
 
-if [ -d "/etc/zabbix" ]
-then
-    OS="Linux"
-    ZBX_ETC="/etc/zabbix"
-    PSK_FLD="/home/zabbix"
-    
-elif [ -d "/usr/local/zabbix/etc/" ]
-then
-    OS="Synology"
-    ZBX_ETC="/usr/local/zabbix/etc"
-    PSK_FLD="/usr/local/zabbix"
+echo "
+  CHECKING ZABBIX PATH
+------------------------------------------"
 
-else
-    $S_LOG -s crit -d $S_NAME "Sorry Zabbix conf folder could not be found. Exit."
-    exit 1
-fi
-
-ZBX_PSK_CONF=${ZBX_ETC}/zabbix_${ZBX_TYPE}${ZBX_ETC_D}/ft-psk.conf
-ZBX_PSK_CONF_USERPARAM=${ZBX_ETC}/zabbix_${ZBX_TYPE}${ZBX_ETC_D}/ft-psk-userparam.conf
-ZBX_PSK_KEY=${PSK_FLD}/key-${ZBX_TYPE}.psk
+PSK_FLD="/home/zabbix"
 SUDOERS_ETC="/etc/sudoers.d/ft-psk"
 
-$S_LOG -d "$S_NAME" "The script will run for $OS" 
 
-#############################
-#############################
-## LOAD PARAMETERS
-#############################
-#############################
+if [ "$ZBX_TYPE" = "agent" ]
+then
+    $(which zabbix_agent2 >/dev/null) && ZBX_CONF_D="/etc/zabbix/zabbix_agent2.d"
+    $(which zabbix_agentd >/dev/null) && ZBX_CONF_D="/etc/zabbix/zabbix_agentd.conf.d"
+
+elif [ "$ZBX_TYPE" = "proxy" ]
+then
+    ZBX_CONF_D="/etc/zabbix/zabbix_proxy.conf.d"
+
+fi
+
+if [ ! -d "${ZBX_CONF_D}" ] ; then $S_LOG -s crit -d $S_NAME "${ZBX_CONF_D} Zabbix ${ZBX_TYPE} Include directory not found" ; exit 10 ; fi
+
+ZBX_PSK_CONF=${ZBX_CONF_D}/ft-psk.conf
+ZBX_PSK_CONF_USERPARAM=${ZBX_CONF_D}/ft-psk-userparam.conf
+ZBX_PSK_KEY=${PSK_FLD}/key-${ZBX_TYPE}.psk
+
+echo "
+  LOAD PARAMETERS
+------------------------------------------"
 
 if [ -n "$2" ] && [ -n "$3" ]
 then 
@@ -70,7 +61,7 @@ then
     PSK_IDENTITY="$2"
     PSK_KEY="$3"
 
-elif [[ "$2" == *"new-psk"* ]]
+elif [[ "$2" == *"new-psk"* ]]
 then
     NEW_PSK=1
     PSK_KEY="$(openssl rand -hex 32)"
@@ -80,64 +71,38 @@ else
     NEW_PSK=0
 fi
 
-#############################
-#############################
-## SETUP SUDOER FILES
-#############################
-#############################
+
+echo "
+  SETUP SUDOER FILES
+------------------------------------------"
 
 $S_LOG -d $S_NAME -d "$SUDOERS_ETC" "==============================="
-$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "==== SUDOERS CONFIGURATION ===="
-$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "==============================="
 
-case $OS in
-    Linux)
-        echo "Defaults:zabbix !requiretty" | sudo EDITOR='tee' visudo --file=$SUDOERS_ETC &>/dev/null
-        echo "zabbix ALL=(ALL) NOPASSWD:${S_DIR_PATH}/deploy.sh" | sudo EDITOR='tee -a' visudo --file=$SUDOERS_ETC &>/dev/null
-        echo "zabbix ALL=(ALL) NOPASSWD:${S_DIR_PATH}/deploy-update.sh" | sudo EDITOR='tee -a' visudo --file=$SUDOERS_ETC &>/dev/null
-        ;;
-
-    Synology)
-        echo "Defaults:zabbixagent !requiretty" > "${SUDOERS_ETC}"
-        echo "zabbixagent ALL=(ALL) NOPASSWD:${S_DIR_PATH}/deploy.sh" >> "${SUDOERS_ETC}"
-        echo "zabbixagent ALL=(ALL) NOPASSWD:${S_DIR_PATH}/deploy-update.sh" >> "${SUDOERS_ETC}"
-        chmod 0440 "$SUDOERS_ETC"
-        ;;
-esac
+echo "Defaults:zabbix !requiretty" | sudo EDITOR='tee' visudo --file=$SUDOERS_ETC &>/dev/null
+echo "zabbix ALL=(ALL) NOPASSWD:${S_DIR_PATH}/deploy.sh" | sudo EDITOR='tee -a' visudo --file=$SUDOERS_ETC &>/dev/null
+echo "zabbix ALL=(ALL) NOPASSWD:${S_DIR_PATH}/deploy-update.sh" | sudo EDITOR='tee -a' visudo --file=$SUDOERS_ETC &>/dev/null
 
 cat $SUDOERS_ETC | $S_LOG -d "$S_NAME" -d "$SUDOERS_ETC" -i 
 
 $S_LOG -d $S_NAME -d "$SUDOERS_ETC" "==============================="
-$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "==============================="
 
 
-#############################
-#############################
-## DEPLOY KEY AND CONF
-#############################
-#############################
+echo "
+  DEPLOY KEY AND CONF
+------------------------------------------"
 
 if [ $NEW_PSK -eq 1 ]
 then
     $S_LOG -d "$S_NAME" -d "Installing Zabbix PSK Key" 
 
-    case $OS in
-        Linux)
-            if [ ! -d "${PSK_FLD}" ]
-            then
-                mkdir ${PSK_FLD}/
-                chown zabbix:zabbix ${PSK_FLD}
-            fi
-            echo $PSK_KEY > ${ZBX_PSK_KEY}
-            chown zabbix:zabbix ${ZBX_PSK_KEY}
-            chmod 600 ${ZBX_PSK_KEY}
-            ;;
-        Synology)
-            echo $PSK_KEY > ${ZBX_PSK_KEY}
-            chown zabbix${ZBX_TYPE}:root ${ZBX_PSK_KEY}
-            chmod 600 ${ZBX_PSK_KEY}
-            ;;
-    esac
+    if [ ! -d "${PSK_FLD}" ]
+    then
+        mkdir ${PSK_FLD}/
+        chown zabbix:zabbix ${PSK_FLD}
+    fi
+    echo $PSK_KEY > ${ZBX_PSK_KEY}
+    chown zabbix:zabbix ${ZBX_PSK_KEY}
+    chmod 600 ${ZBX_PSK_KEY}
 
     $S_LOG -d "$S_NAME" -d "Installing Zabbix PSK Conf" 
     echo "TLSConnect=psk" > $ZBX_PSK_CONF
@@ -172,15 +137,8 @@ then
     echo "UserParameter=ft-psk.key.lastmodified, stat --format=%Y ${ZBX_PSK_KEY}" >> $ZBX_PSK_CONF_USERPARAM
 fi
 
-case $OS in
-    Linux)
-        echo "service zabbix-${ZBX_TYPE} restart" | at now + 1 min &>/dev/null ## restart zabbix ${ZBX_TYPE} with a delay
-        $S_LOG -s $? -d "$S_NAME" "Scheduling Zabbix ${ZBX_TYPE} Restart"
-        ;;
-    Synology)
-        $S_LOG -s $? -d "$S_NAME" "You need to restart Zabbix (synoservice --restart pkgctl-zabbix)"
-        ;;
-esac
+echo "systemctl restart zabbix-${ZBX_TYPE}*" | at now + 1 min &>/dev/null ## restart zabbix ${ZBX_TYPE} with a delay
+$S_LOG -s $? -d "$S_NAME" "Scheduling Zabbix ${ZBX_TYPE} Restart"
 
 $S_LOG -d "$S_NAME" "End $S_NAME"
 
