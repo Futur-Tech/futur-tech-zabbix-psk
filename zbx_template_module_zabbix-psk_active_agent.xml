@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>5.0</version>
+    <date>2023-02-14T14:18:57Z</date>
+    <groups>
+        <group>
+            <name>Templates/Futur-Tech/Modules Zabbix</name>
+        </group>
+    </groups>
+    <templates>
+        <template>
+            <template>Template Futur-Tech Module Zabbix PSK</template>
+            <name>Template Futur-Tech Module Zabbix PSK</name>
+            <description>https://github.com/GuillaumeHullin/futur-tech-zabbix-psk</description>
+            <groups>
+                <group>
+                    <name>Templates/Futur-Tech/Modules Zabbix</name>
+                </group>
+            </groups>
+            <applications>
+                <application>
+                    <name>Monitoring agent</name>
+                </application>
+            </applications>
+            <items>
+                <item>
+                    <name>Zabbix agent PSK Identity</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>ft-psk.identity</key>
+                    <delay>6h</delay>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <applications>
+                        <application>
+                            <name>Monitoring agent</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>DISCARD_UNCHANGED_HEARTBEAT</type>
+                            <params>1d</params>
+                        </step>
+                    </preprocessing>
+                    <triggers>
+                        <trigger>
+                            <expression>{iregexp(^autoregistration-psk)}=1</expression>
+                            <name>Autoregistration PSK is being used</name>
+                            <opdata>PSK Identity: {ITEM.LASTVALUE}</opdata>
+                            <priority>AVERAGE</priority>
+                            <description>The PSK for autoregistration is being in use. Change it ASAP.</description>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Zabbix agent PSK Key Last Modified</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>ft-psk.key.lastmodified</key>
+                    <delay>6h</delay>
+                    <units>unixtime</units>
+                    <applications>
+                        <application>
+                            <name>Monitoring agent</name>
+                        </application>
+                    </applications>
+                </item>
+            </items>
+        </template>
+    </templates>
+</zabbix_export>
