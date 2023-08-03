@@ -1,6 +1,6 @@
 zabbix_export:
   version: '6.0'
-  date: '2023-08-03T14:18:07Z'
+  date: '2023-08-03T14:24:30Z'
   groups:
     - uuid: 717c8b880cca47c8a47a1215e4424626
       name: 'Templates/Futur-Tech/Modules Zabbix'
@@ -30,13 +30,14 @@ zabbix_export:
             - uuid: e6b75cc9af3f498ca3dfda659768e169
               expression: 'find(/Futur-Tech Module Zabbix PSK/ft-psk.identity,,"iregexp","^autoregistration-psk")=1'
               name: 'Autoregistration PSK is being used'
+              opdata: 'Current PSK Identity: {{ITEM.LASTVALUE}.regsub("([\s\S]*)", \1)}'
               priority: AVERAGE
               description: 'The PSK for autoregistration is being in use. Change it ASAP.'
             - uuid: 2cc9e5db6a94430a8a930f91497379ce
               expression: 'change(/Futur-Tech Module Zabbix PSK/ft-psk.identity)=1'
               recovery_mode: NONE
               name: 'PSK Identity has changed'
-              opdata: 'Current PSK Identity: {ITEM.LASTVALUE}'
+              opdata: 'Current PSK Identity: {{ITEM.LASTVALUE}.regsub("([\s\S]*)", \1)}'
               priority: WARNING
               description: 'Need to be closed manually.'
         - uuid: dc02895b29fd42e98b3447fa7e0ff600
@@ -53,6 +54,7 @@ zabbix_export:
               expression: 'change(/Futur-Tech Module Zabbix PSK/ft-psk.key.lastmodified)=1'
               recovery_mode: NONE
               name: 'PSK Key has changed'
+              opdata: 'Current PSK Identity: {{ITEM.LASTVALUE}.regsub("([\s\S]*)", \1)}'
               priority: WARNING
               description: 'Need to be closed manually.'
       tags:
