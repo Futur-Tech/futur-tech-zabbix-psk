@@ -45,10 +45,7 @@ zbx_psk_conf=${zbx_conf_d}/ft-psk.conf
 zbx_psk_conf_userparam=${zbx_conf_d}/ft-psk-userparam.conf
 zbx_psk_key=${psk_fld}/key-${zbx_type}.psk
 
-echo "
-  LOAD PARAMETERS
-------------------------------------------"
-
+# LOAD PARAMETERS
 if [ -n "$2" ] && [ -n "$3" ]; then
     new_psk=1
     psk_identity="$2"
@@ -63,9 +60,7 @@ else
     new_psk=0
 fi
 
-echo "
-  SETUP SUDOER FILES
-------------------------------------------"
+#  SETUP SUDOER FILES
 sudoers_etc="/etc/sudoers.d/ft-psk"
 
 $S_LOG -d $S_NAME -d "$sudoers_etc" "==============================="
@@ -78,10 +73,7 @@ cat $sudoers_etc | $S_LOG -d "$S_NAME" -d "$sudoers_etc" -i
 
 $S_LOG -d $S_NAME -d "$sudoers_etc" "==============================="
 
-echo "
-  DEPLOY KEY AND CONF
-------------------------------------------"
-
+# DEPLOY KEY
 if [ $new_psk -eq 1 ]; then
     $S_LOG -d "$S_NAME" -d "Installing Zabbix PSK Key"
 
@@ -119,6 +111,7 @@ if [ $new_psk -eq 1 ]; then
 
 fi
 
+# DEPLOY CONF
 if [ "${zbx_type}" = "agent" ]; then
     $S_LOG -d "$S_NAME" -d "Installing Zabbix UserParameters"
     echo "UserParameter=ft-psk.identity, grep -oP '^TLSPSKIdentity=\K.+' ${zbx_psk_conf}" >$zbx_psk_conf_userparam
