@@ -23,10 +23,7 @@ else
 fi
 $S_LOG -d "$S_NAME" "The script will run for Zabbix $zbx_type"
 
-echo "
-  CHECKING ZABBIX PATH
-------------------------------------------"
-
+# CHECKING ZABBIX PATH
 psk_fld="/home/zabbix"
 if [ "$zbx_type" = "agent" ]; then
     $(which zabbix_agent2 >/dev/null) && zbx_conf_d="/etc/zabbix/zabbix_agent2.d"
@@ -113,9 +110,8 @@ fi
 
 # DEPLOY CONF
 if [ "${zbx_type}" = "agent" ]; then
-    $S_LOG -d "$S_NAME" -d "Installing Zabbix UserParameters"
-    echo "UserParameter=ft-psk.identity, grep -oP '^TLSPSKIdentity=\K.+' ${zbx_psk_conf}" >$zbx_psk_conf_userparam
-    echo "UserParameter=ft-psk.key.lastmodified, stat --format=%Y ${zbx_psk_key}" >>$zbx_psk_conf_userparam
+    echo "UserParameter=ft-psk.identity, grep -oP '^TLSPSKIdentity=\K.+' ${zbx_psk_conf}\nUserParameter=ft-psk.key.lastmodified, stat --format=%Y ${zbx_psk_key}" >$zbx_psk_conf_userparam
+    $S_LOG -s $? -d "$S_NAME" "Install Zabbix Agent UserParameters in $zbx_psk_conf_userparam"
 fi
 
 echo "systemctl restart zabbix-${zbx_type}*" | at now + 1 min &>/dev/null ## restart zabbix ${zbx_type} with a delay
