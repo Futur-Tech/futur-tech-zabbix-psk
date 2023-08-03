@@ -4,141 +4,129 @@
 
 # Deploy PSK Key for Zabbix Agent/Proxy v1.0
 
-# Usage: 
+# Usage:
 # To load a specific key:   deploy.sh <agent|proxy> <psk_identity> <psk_key>
 # To generate a random key: deploy.sh <agent|proxy> new-psk
 # To update confs:          deploy.sh <agent|proxy>
 
-
 source "$(dirname "$0")/ft-util/ft_util_inc_var"
 
-if [ "$1" = "agent" ] || [ "$1" = "proxy" ]
-then
-    ZBX_TYPE="$1" # "agent" or "proxy"
+if [ "$1" = "agent" ] || [ "$1" = "proxy" ]; then
+    zbx_type="$1" # "agent" or "proxy"
+
+elif [ -z "$1" ]; then
+    zbx_type="agent" # Default if empty
 
 else
-    $S_LOG -d $S_NAME "Doing nothing, you need to give at least one parameter (agent or proxy)."
-    $S_LOG -d "$S_NAME" "End $S_NAME"
+    $S_LOG -s crit -d $S_NAME "Invalid parameter, first parameter should be: \"agent\" or \"proxy\"."
     exit 0
 fi
-$S_LOG -d "$S_NAME" "The script will run for Zabbix $ZBX_TYPE" 
-
-$S_LOG -d $S_NAME "Start $S_NAME $*"
-
+$S_LOG -d "$S_NAME" "The script will run for Zabbix $zbx_type"
 
 echo "
   CHECKING ZABBIX PATH
 ------------------------------------------"
 
-PSK_FLD="/home/zabbix"
-SUDOERS_ETC="/etc/sudoers.d/ft-psk"
+psk_fld="/home/zabbix"
+if [ "$zbx_type" = "agent" ]; then
+    $(which zabbix_agent2 >/dev/null) && zbx_conf_d="/etc/zabbix/zabbix_agent2.d"
+    $(which zabbix_agentd >/dev/null) && zbx_conf_d="/etc/zabbix/zabbix_agentd.conf.d"
 
-
-if [ "$ZBX_TYPE" = "agent" ]
-then
-    $(which zabbix_agent2 >/dev/null) && ZBX_CONF_D="/etc/zabbix/zabbix_agent2.d"
-    $(which zabbix_agentd >/dev/null) && ZBX_CONF_D="/etc/zabbix/zabbix_agentd.conf.d"
-
-elif [ "$ZBX_TYPE" = "proxy" ]
-then
-    ZBX_CONF_D="/etc/zabbix/zabbix_proxy.conf.d"
-
+elif [ "$zbx_type" = "proxy" ]; then
+    zbx_conf_d="/etc/zabbix/zabbix_proxy.conf.d"
 fi
 
-if [ ! -d "${ZBX_CONF_D}" ] ; then $S_LOG -s crit -d $S_NAME "${ZBX_CONF_D} Zabbix ${ZBX_TYPE} Include directory not found" ; exit 10 ; fi
+if [ ! -d "${zbx_conf_d}" ]; then
+    $S_LOG -s crit -d $S_NAME "${zbx_conf_d} Zabbix ${zbx_type} Include directory not found"
+    exit 10
+fi
 
-ZBX_PSK_CONF=${ZBX_CONF_D}/ft-psk.conf
-ZBX_PSK_CONF_USERPARAM=${ZBX_CONF_D}/ft-psk-userparam.conf
-ZBX_PSK_KEY=${PSK_FLD}/key-${ZBX_TYPE}.psk
+zbx_psk_conf=${zbx_conf_d}/ft-psk.conf
+zbx_psk_conf_userparam=${zbx_conf_d}/ft-psk-userparam.conf
+zbx_psk_key=${psk_fld}/key-${zbx_type}.psk
 
 echo "
   LOAD PARAMETERS
 ------------------------------------------"
 
-if [ -n "$2" ] && [ -n "$3" ]
-then 
-    NEW_PSK=1
-    PSK_IDENTITY="$2"
-    PSK_KEY="$3"
+if [ -n "$2" ] && [ -n "$3" ]; then
+    new_psk=1
+    psk_identity="$2"
+    psk_key="$3"
 
-elif [[ "$2" == *"new-psk"* ]]
-then
-    NEW_PSK=1
-    PSK_KEY="$(openssl rand -hex 32)"
-    PSK_IDENTITY="ft-gen-${ZBX_TYPE}-$(hostname)"
+elif [[ "$2" == *"new-psk"* ]]; then
+    new_psk=1
+    psk_key="$(openssl rand -hex 32)"
+    psk_identity="ft-gen-${zbx_type}-$(hostname)"
 
-else 
-    NEW_PSK=0
+else
+    new_psk=0
 fi
-
 
 echo "
   SETUP SUDOER FILES
 ------------------------------------------"
+sudoers_etc="/etc/sudoers.d/ft-psk"
 
-$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "==============================="
+$S_LOG -d $S_NAME -d "$sudoers_etc" "==============================="
 
-echo "Defaults:zabbix !requiretty" | sudo EDITOR='tee' visudo --file=$SUDOERS_ETC &>/dev/null
-echo "zabbix ALL=(ALL) NOPASSWD:${S_DIR_PATH}/deploy.sh" | sudo EDITOR='tee -a' visudo --file=$SUDOERS_ETC &>/dev/null
-echo "zabbix ALL=(ALL) NOPASSWD:${S_DIR_PATH}/deploy-update.sh" | sudo EDITOR='tee -a' visudo --file=$SUDOERS_ETC &>/dev/null
+echo "Defaults:zabbix !requiretty" | sudo EDITOR='tee' visudo --file=$sudoers_etc &>/dev/null
+echo "zabbix ALL=(ALL) NOPASSWD:${S_DIR_PATH}/deploy.sh" | sudo EDITOR='tee -a' visudo --file=$sudoers_etc &>/dev/null
+echo "zabbix ALL=(ALL) NOPASSWD:${S_DIR_PATH}/deploy-update.sh" | sudo EDITOR='tee -a' visudo --file=$sudoers_etc &>/dev/null
 
-cat $SUDOERS_ETC | $S_LOG -d "$S_NAME" -d "$SUDOERS_ETC" -i 
+cat $sudoers_etc | $S_LOG -d "$S_NAME" -d "$sudoers_etc" -i
 
-$S_LOG -d $S_NAME -d "$SUDOERS_ETC" "==============================="
-
+$S_LOG -d $S_NAME -d "$sudoers_etc" "==============================="
 
 echo "
   DEPLOY KEY AND CONF
 ------------------------------------------"
 
-if [ $NEW_PSK -eq 1 ]
-then
-    $S_LOG -d "$S_NAME" -d "Installing Zabbix PSK Key" 
+if [ $new_psk -eq 1 ]; then
+    $S_LOG -d "$S_NAME" -d "Installing Zabbix PSK Key"
 
-    if [ ! -d "${PSK_FLD}" ]
-    then
-        mkdir ${PSK_FLD}/
-        chown zabbix:zabbix ${PSK_FLD}
+    if [ ! -d "${psk_fld}" ]; then
+        mkdir ${psk_fld}/
+        chown zabbix:zabbix ${psk_fld}
     fi
-    echo $PSK_KEY > ${ZBX_PSK_KEY}
-    chown zabbix:zabbix ${ZBX_PSK_KEY}
-    chmod 600 ${ZBX_PSK_KEY}
+    echo $psk_key >${zbx_psk_key}
+    chown zabbix:zabbix ${zbx_psk_key}
+    chmod 600 ${zbx_psk_key}
 
-    $S_LOG -d "$S_NAME" -d "Installing Zabbix PSK Conf" 
-    echo "TLSConnect=psk" > $ZBX_PSK_CONF
-    echo "TLSAccept=psk" >> $ZBX_PSK_CONF
-    echo "TLSPSKIdentity=$PSK_IDENTITY" >> $ZBX_PSK_CONF
-    echo "TLSPSKFile=${ZBX_PSK_KEY}" >> $ZBX_PSK_CONF
+    $S_LOG -d "$S_NAME" -d "Installing Zabbix PSK Conf"
+    echo "TLSConnect=psk" >$zbx_psk_conf
+    echo "TLSAccept=psk" >>$zbx_psk_conf
+    echo "TLSPSKIdentity=$psk_identity" >>$zbx_psk_conf
+    echo "TLSPSKFile=${zbx_psk_key}" >>$zbx_psk_conf
 
-    echo "" 
+    echo ""
     echo "####################################################"
     echo "###################  WARNING  ######################"
     echo "####################################################"
     echo ""
     echo "Update your server-side host configuration!"
-    echo "" 
-    echo "PSK_IDENTITY"
-    grep -oP '^TLSPSKIdentity=\K.+' ${ZBX_PSK_CONF}
-    echo "" 
-    echo "PSK_KEY"
-    cat ${ZBX_PSK_KEY}
-    echo "" 
+    echo ""
+    echo "psk_identity"
+    grep -oP '^TLSPSKIdentity=\K.+' ${zbx_psk_conf}
+    echo ""
+    echo "psk_key"
+    cat ${zbx_psk_key}
+    echo ""
     echo "####################################################"
     echo "###################  WARNING  ######################"
     echo "####################################################"
-    echo "" 
+    echo ""
 
 fi
 
-if [ "${ZBX_TYPE}" = "agent" ]
-then
-    $S_LOG -d "$S_NAME" -d "Installing Zabbix UserParameters" 
-    echo "UserParameter=ft-psk.identity, grep -oP '^TLSPSKIdentity=\K.+' ${ZBX_PSK_CONF}" > $ZBX_PSK_CONF_USERPARAM
-    echo "UserParameter=ft-psk.key.lastmodified, stat --format=%Y ${ZBX_PSK_KEY}" >> $ZBX_PSK_CONF_USERPARAM
+if [ "${zbx_type}" = "agent" ]; then
+    $S_LOG -d "$S_NAME" -d "Installing Zabbix UserParameters"
+    echo "UserParameter=ft-psk.identity, grep -oP '^TLSPSKIdentity=\K.+' ${zbx_psk_conf}" >$zbx_psk_conf_userparam
+    echo "UserParameter=ft-psk.key.lastmodified, stat --format=%Y ${zbx_psk_key}" >>$zbx_psk_conf_userparam
 fi
 
-echo "systemctl restart zabbix-${ZBX_TYPE}*" | at now + 1 min &>/dev/null ## restart zabbix ${ZBX_TYPE} with a delay
-$S_LOG -s $? -d "$S_NAME" "Scheduling Zabbix ${ZBX_TYPE} Restart"
+echo "systemctl restart zabbix-${zbx_type}*" | at now + 1 min &>/dev/null ## restart zabbix ${zbx_type} with a delay
+$S_LOG -s $? -d "$S_NAME" "Scheduling Zabbix ${zbx_type} Restart"
 
 $S_LOG -d "$S_NAME" "End $S_NAME"
 
