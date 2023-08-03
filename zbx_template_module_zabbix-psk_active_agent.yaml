@@ -1,0 +1,59 @@
+zabbix_export:
+  version: '6.0'
+  date: '2023-08-03T14:18:07Z'
+  groups:
+    - uuid: 717c8b880cca47c8a47a1215e4424626
+      name: 'Templates/Futur-Tech/Modules Zabbix'
+  templates:
+    - uuid: 39b1364ceca848af901b4e2d3d00bae6
+      template: 'Futur-Tech Module Zabbix PSK'
+      name: 'Futur-Tech Module Zabbix PSK'
+      description: 'https://github.com/GuillaumeHullin/futur-tech-zabbix-psk'
+      groups:
+        - name: 'Templates/Futur-Tech/Modules Zabbix'
+      items:
+        - uuid: 3a8839aad51b4eb899198e5057ab0938
+          name: 'Zabbix agent PSK Identity'
+          type: ZABBIX_ACTIVE
+          key: ft-psk.identity
+          delay: 1h
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+          tags:
+            - tag: Application
+              value: 'Monitoring agent'
+          triggers:
+            - uuid: e6b75cc9af3f498ca3dfda659768e169
+              expression: 'find(/Futur-Tech Module Zabbix PSK/ft-psk.identity,,"iregexp","^autoregistration-psk")=1'
+              name: 'Autoregistration PSK is being used'
+              priority: AVERAGE
+              description: 'The PSK for autoregistration is being in use. Change it ASAP.'
+            - uuid: 2cc9e5db6a94430a8a930f91497379ce
+              expression: 'change(/Futur-Tech Module Zabbix PSK/ft-psk.identity)=1'
+              recovery_mode: NONE
+              name: 'PSK Identity has changed'
+              opdata: 'Current PSK Identity: {ITEM.LASTVALUE}'
+              priority: WARNING
+              description: 'Need to be closed manually.'
+        - uuid: dc02895b29fd42e98b3447fa7e0ff600
+          name: 'Zabbix agent PSK Key Last Modified'
+          type: ZABBIX_ACTIVE
+          key: ft-psk.key.lastmodified
+          delay: 1h
+          units: unixtime
+          tags:
+            - tag: Application
+              value: 'Monitoring agent'
+          triggers:
+            - uuid: 0d95ca744a0340d796284730ebf943a4
+              expression: 'change(/Futur-Tech Module Zabbix PSK/ft-psk.key.lastmodified)=1'
+              recovery_mode: NONE
+              name: 'PSK Key has changed'
+              priority: WARNING
+              description: 'Need to be closed manually.'
+      tags:
+        - tag: Futur-Tech
