@@ -110,11 +110,11 @@ fi
 
 # DEPLOY CONF
 if [ "${zbx_type}" = "agent" ]; then
-    echo "UserParameter=ft-psk.identity, grep -oP '^TLSPSKIdentity=\K.+' ${zbx_psk_conf}\nUserParameter=ft-psk.key.lastmodified, stat --format=%Y ${zbx_psk_key}" >$zbx_psk_conf_userparam
+    echo -e "UserParameter=ft-psk.identity, grep -oP '^TLSPSKIdentity=\K.+' ${zbx_psk_conf}\nUserParameter=ft-psk.key.lastmodified, stat --format=%Y ${zbx_psk_key}" >$zbx_psk_conf_userparam
     $S_LOG -s $? -d "$S_NAME" "Install Zabbix Agent UserParameters in $zbx_psk_conf_userparam"
 fi
 
-echo -e "systemctl restart zabbix-${zbx_type}*" | at now + 1 min &>/dev/null ## restart zabbix ${zbx_type} with a delay
+echo "systemctl restart zabbix-${zbx_type}*" | at now + 1 min &>/dev/null ## restart zabbix ${zbx_type} with a delay
 $S_LOG -s $? -d "$S_NAME" "Scheduling Zabbix ${zbx_type} Restart"
 
 $S_LOG -d "$S_NAME" "End $S_NAME"
