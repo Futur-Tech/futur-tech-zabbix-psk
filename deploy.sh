@@ -114,7 +114,7 @@ if [ "${zbx_type}" = "agent" ]; then
     $S_LOG -s $? -d "$S_NAME" "Install Zabbix Agent UserParameters in $zbx_psk_conf_userparam"
 fi
 
-echo "systemctl restart zabbix-${zbx_type}*" | at now + 1 min &>/dev/null ## restart zabbix ${zbx_type} with a delay
+echo -e "systemctl restart zabbix-${zbx_type}*" | at now + 1 min &>/dev/null ## restart zabbix ${zbx_type} with a delay
 $S_LOG -s $? -d "$S_NAME" "Scheduling Zabbix ${zbx_type} Restart"
 
 $S_LOG -d "$S_NAME" "End $S_NAME"
